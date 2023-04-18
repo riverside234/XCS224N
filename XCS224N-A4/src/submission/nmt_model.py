@@ -242,8 +242,8 @@ class NMT(nn.Module):
         Y =  self.model_embeddings.target(target_padded)
         for Y_time_step in torch.split(Y, 1):
             Y_t = torch.squeeze(Y_time_step, 0)
-            Ybar_t = torch.cat((Y_t, o_prev), -1)
-            cell, o_t, we = self.step(Ybar_t, dec_state, enc_hiddens, enc_hiddens_proj, enc_masks)
+            Ybar_t = torch.cat((Y_t, o_prev), 1)
+            dec_state, o_t, we = self.step(Ybar_t, dec_state, enc_hiddens, enc_hiddens_proj, enc_masks)
             combined_outputs.append(o_t)
             o_prev = o_t
         combined_outputs = torch.stack(combined_outputs, 0)
@@ -307,7 +307,7 @@ class NMT(nn.Module):
         ### START CODE HERE (~3 Lines)
         dec_state = self.decoder(Ybar_t, dec_state)
         (dec_hidden, dec_cell) = dec_state
-        e_t = torch.squeeze(torch.bmm(enc_hiddens_proj, dec_hidden.unsqueeze(2)), 2)
+        e_t = torch.squeeze(torch.bmm(enc_hiddens_proj, dec_hidden.unsqueeze(2)), 2) # e_t b, src_len
         ### END CODE HERE
 
         # Set e_t to -inf where enc_masks has 1
@@ -344,7 +344,7 @@ class NMT(nn.Module):
         alpha_t = torch.nn.functional.softmax(e_t, 1) # b, src_len
         alpha_t = torch.unsqueeze(alpha_t, 1) # b, 1, src_len
         a_t = torch.squeeze(torch.bmm(alpha_t, enc_hiddens),1)
-        U_t = torch.cat((a_t, dec_hidden), 1)
+        U_t = torch.cat((dec_hidden, a_t), 1)
         V_t = self.combined_output_projection(U_t)
         O_t = self.dropout(torch.tanh(V_t))
         ### END CODE HERE
