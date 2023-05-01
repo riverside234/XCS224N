@@ -12,6 +12,7 @@ def initialize_vanilla_model(mconf):
     ### [part c]: Make some model here
 
     ### START CODE HERE
+    attention_model =  GPT(mconf)
     ### END CODE HERE
     return attention_model
 
@@ -60,6 +61,11 @@ def finetune(reading_params_path, finetune_corpus_path, pretrain_dataset, block_
     trainer_obj = None #Trainer object (see trainer.py for more details)
     tconf = None #TrainerConfig object (see trainer.py for more details)
     ### START CODE HERE
+    if reading_params_path is None:
+        tconf = TrainerConfig(max_epochs=75, batch_size=256, learning_rate=6e-4, lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(pretrain_dataset)*block_size, num_workers=4)
+        test_dataset = None
+        train_dataset = NameDataset(data=open(finetune_corpus_path).read(), pretraining_dataset=pretrain_dataset)
+        trainer_obj = Trainer(model, test_dataset=test_dataset, train_dataset=train_dataset, config = tconf)
     ### END CODE HERE
     return tconf, trainer_obj
 
@@ -96,5 +102,6 @@ def train(model, writing_params_path, trainer_obj):
     ### Note: trainer_obj is of type Trainer (see trainer.py for more details)
 
     ### START CODE HERE
+    trainer_obj.train()
     ### END CODE HERE
     return
