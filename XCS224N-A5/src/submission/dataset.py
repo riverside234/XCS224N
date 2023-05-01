@@ -2,6 +2,7 @@ import random
 import torch
 from torch.utils.data import Dataset
 import argparse
+import numpy as np
 
 """
 The input-output pairs (x, y) of the NameDataset are of the following form:
@@ -173,11 +174,34 @@ class CharCorruptionDataset(Dataset):
 
         ### TODO:
         ### [part e]: see spec above
-        
+
         ### START CODE HERE
+        document = self.data[idx]
+        random_size = random.randint(4, int(self.block_size*7/8))
+        truncated_document = document[:random_size]
+
+
+        random_length = np.random.normal(0.23, 0.25) # offset a bit because it will go up with the below rules
+        if random_length < 0:
+            random_length = 0
+        if random_length > 1:
+            random_length = 1
+        random_mask_length = int(len(truncated_document) * random_length)
+        random_mask_start = random.randint(0, len(truncated_document) - random_mask_length)
+        prefix = truncated_document[:random_mask_start]
+        suffix = truncated_document[random_mask_start+random_mask_length:]
+    
+        masked_content = truncated_document[random_mask_start: random_mask_start+random_mask_length]
+
+
+        masked_string = prefix + self.MASK_CHAR + suffix + self.MASK_CHAR + masked_content + self.MASK_CHAR + self.PAD_CHAR * (self.block_size - len(truncated_document) - 3)
+        input_str = masked_string[:-1]
+        output_str = masked_string[1:]
+        input_tensor = torch.tensor([self.stoi[c] for c in input_str], dtype=torch.long)
+        output_tensor = torch.tensor([self.stoi[c] for c in output_str], dtype=torch.long)
+        return input_tensor, output_tensor
         ### END CODE HERE
 
-        raise NotImplementedError
 
 """
 Code under here is strictly for your debugging purposes; feel free to modify
