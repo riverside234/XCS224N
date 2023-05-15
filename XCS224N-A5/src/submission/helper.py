@@ -20,7 +20,8 @@ def initialize_synthesizer_model(mconf):
     attention_model = None
     ### TODO
     ### [part g]: Make some other model here
-
+    mconf.synthesizer = True
+    attention_model = GPT(mconf)
     ### START CODE HERE
     ### END CODE HERE
     return attention_model
