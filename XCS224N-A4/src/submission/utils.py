@@ -40,8 +40,14 @@ def pad_sents(sents, pad_token):
     sents_padded = []
 
     ### START CODE HERE (~6 Lines)
-    max_length = max([len(x) for x in sents])
-    sents_padded = [[*x, *[pad_token for y in range(max_length - len(x))]] for x in sents]
+    maxLength = max([len(sent) for sent in sents])
+
+    def pad_sent(sentence, size, pad_token):
+        padSize = [pad_token] * size
+        return sentence + padSize
+    
+    sents_padded = [pad_sent(sent, maxLength - len(sent), pad_token) for sent in sents]
+
     ### END CODE HERE
 
     return sents_padded
